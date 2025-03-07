@@ -3,12 +3,12 @@ from __future__ import annotations
 import pytest
 
 from datamodel_code_generator.imports import Import
-from datamodel_code_generator.model.sqlalchemy import BaseModel, DataModelField, DataTypeManager
+from datamodel_code_generator.model.sqlmodel import BaseModel, DataModelField, DataTypeManager
 from datamodel_code_generator.reference import Reference
 from datamodel_code_generator.types import DataType, Types
 
 
-def test_sqlalchemy_base() -> None:
+def test_sqlmodel_base() -> None:
     data_class = BaseModel(
         fields=[],
         reference=Reference(name="Base", path="Base"),
@@ -20,7 +20,7 @@ def test_sqlalchemy_base() -> None:
     assert data_class.render() == "class Base(SQLModel):\n    pass"
 
 
-def test_sqlalchemy_model() -> None:
+def test_sqlmodel_model() -> None:
     field = DataModelField(name="a", data_type=DataType(type="str"), required=True)
 
     data_class = BaseModel(

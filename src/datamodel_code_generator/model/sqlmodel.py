@@ -32,6 +32,10 @@ class BaseModel(DataModel):
     DEFAULT_IMPORTS: ClassVar[tuple[Import, ...]] = (IMPORT_SQLMODEL,)
 
 
+class RootModel(BaseModel):
+    TEMPLATE_FILE_PATH: ClassVar[str] = "root.jinja2"
+
+
 class DataModelField(DataModelFieldBase):
     _FIELD_KEYS: ClassVar[set[str]] = {
         "default_factory",
@@ -47,14 +51,59 @@ class DataModelField(DataModelFieldBase):
     @property
     def imports(self) -> tuple[Import, ...]:
         field = self.field
-        if field and field.startswith("field("):
+        if field and field.startswith("Field("):
             return chain_as_tuple(super().imports, (IMPORT_FIELD,))
+        if field and field.startswith("Relationship("):
+            return chain_as_tuple(super().imports, (IMPORT_RELATIONSHIP,))
         return super().imports
 
     def self_reference(self) -> bool:  # pragma: no cover
         return isinstance(self.parent, BaseModel) and self.parent.reference.path in {
             d.reference.path for d in self.data_type.all_data_types if d.reference
         }
+
+    @property
+    def field(self) -> str | None:
+        """for backwards compatibility"""
+        return str(self) or None
+
+    def __str__(self) -> str:
+        data: dict[str, Any] = {
+            k: v
+            for k, v in self.extras.items()
+            if k in self._FIELD_KEYS
+        }
+
+        if self.default != UNDEFINED and self.default is not None:
+            data["default"] = self.default
+
+        if self.required:
+            data = {
+                k: v
+                for k, v in data.items()
+                if k not in {
+                    "default",
+                    "default_factory",
+                }
+            }
+
+        if not data:
+            return ""
+
+        if len(data) == 1 and "default" in data:
+            default = data["default"]
+
+            if isinstance(default, (list, dict)):
+                return f"Field(default=lambda :{default!r})"
+            return repr(default)
+
+        # TODO: handle PK/FK attributes here?
+        # TODO: handling for relationships
+        kwargs = [
+            f"{k}={v if k == 'default' else repr(v)}"
+            for k, v in data.items()
+        ]
+        return f"Field({', '.join(kwargs)})"
 
 
 class DataTypeManager(_DataTypeManager):

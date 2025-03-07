@@ -1,12 +1,14 @@
 {% for decorator in decorators -%}
 {{ decorator }}
 {% endfor -%}
-class {{ class_name }}({{ base_class }}):
+class {{ class_name }}({{ base_class }}, table=True):
 {%- if description %}
     """
     {{ description | indent(4) }}
     """
 {%- endif %}
+    __tablename__: str = '{{ class_name | snake_case }}'
+
 {%- if not fields and not description %}
     pass
 {%- endif %}

@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, ClassVar, Optional
 
+from jinja2.filters import FILTERS
+
 from datamodel_code_generator import DatetimeClassType, PythonVersion, PythonVersionMin
 from datamodel_code_generator.imports import (
     IMPORT_DATE,
@@ -26,6 +28,15 @@ IMPORT_FIELD = Import.from_full_path("sqlmodel.Field")
 IMPORT_RELATIONSHIP = Import.from_full_path("sqlmodel.Relationship")
 
 
+def camelcase_to_snake_case(value: str) -> str:
+    return "".join(
+        ["_" + c.lower() if c.isupper() else c for c in value]
+    ).lstrip("_")
+
+
+FILTERS["snake_case"] = camelcase_to_snake_case
+
+
 class BaseModel(DataModel):
     TEMPLATE_FILE_PATH: ClassVar[str] = "sqlmodel.jinja2"
     BASE_CLASS: ClassVar[str] = "sqlmodel.SQLModel"
@@ -45,6 +56,9 @@ class DataModelField(DataModelFieldBase):
         "compare",
         "metadata",
         "kw_only",
+        # Custom keys for generating SQLModel fields
+        "primary_key",
+        "foreign_key",
     }
     constraints: Optional[Constraints] = None  # noqa: UP045
 

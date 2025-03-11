@@ -40,7 +40,7 @@ FILTERS["snake_case"] = camelcase_to_snake_case
 class BaseModel(DataModel):
     TEMPLATE_FILE_PATH: ClassVar[str] = "sqlmodel.jinja2"
     BASE_CLASS: ClassVar[str] = "sqlmodel.SQLModel"
-    DEFAULT_IMPORTS: ClassVar[tuple[Import, ...]] = (IMPORT_SQLMODEL,)
+    DEFAULT_IMPORTS: ClassVar[tuple[Import, ...]] = (IMPORT_SQLMODEL, IMPORT_FIELD)
 
 
 class RootModel(BaseModel):

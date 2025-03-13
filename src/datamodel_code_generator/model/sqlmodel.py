@@ -42,6 +42,19 @@ class BaseModel(DataModel):
     BASE_CLASS: ClassVar[str] = "sqlmodel.SQLModel"
     DEFAULT_IMPORTS: ClassVar[tuple[Import, ...]] = (IMPORT_SQLMODEL, IMPORT_FIELD)
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        if self.fields:
+            self.fields.insert(
+                0,
+                DataModelField(
+                    name="id",
+                    data_type=DataType(type="int"),
+                    extras={"primary_key": True},
+                    required=True,
+                )
+            )
 
 class RootModel(BaseModel):
     TEMPLATE_FILE_PATH: ClassVar[str] = "root.jinja2"

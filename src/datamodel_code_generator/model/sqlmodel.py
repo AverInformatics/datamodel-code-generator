@@ -45,7 +45,8 @@ class BaseModel(DataModel):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        if self.fields:
+        existing_fields = {f.name for f in self.fields}
+        if self.fields and "id" not in existing_fields:
             self.fields.insert(
                 0,
                 DataModelField(
@@ -55,6 +56,7 @@ class BaseModel(DataModel):
                     required=True,
                 )
             )
+
 
 class RootModel(BaseModel):
     TEMPLATE_FILE_PATH: ClassVar[str] = "root.jinja2"
